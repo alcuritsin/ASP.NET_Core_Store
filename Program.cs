@@ -1,14 +1,26 @@
-List<Product> catalog = new List<Product>();
+List<Product> catalog = new List<Product>();    //  Локальная переменная для хранения каталога
+
+IHeaderDictionary headers = new HeaderDictionary(); //  Локальная переменная для хранения HTTP-заголовков из предидущего запроса
+string path = String.Empty; //  Локальная переменная для хранения пути предидущего запроса
+
 CreateCatalog();
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.MapGet("/", () => "ASP.NET_Core-Store");
+app.MapGet("/", Hello);
 app.MapGet("/catalog", GetCatalog);
 app.MapPost("/catalog/add", AddProduct);
+app.MapGet("/headers", HeadersToString);
 
 app.Run();
+
+string Hello(HttpContext context)
+{
+    SaveHeaders(context);
+
+    return "ASP.NET_Core-Store";
+}
 
 void CreateCatalog()
 {
@@ -20,7 +32,7 @@ void CreateCatalog()
     catalog.Add(new Product(name:"Продукт_03", price: 33.3));
 }
 
-string GetCatalog()
+string CatalogToString()
 {
     //  Возвращает каталог в текствовом формате
     int counter = 1; 
@@ -37,12 +49,51 @@ string GetCatalog()
     return result;
 }
 
-string AddProduct(Product product)
+string GetCatalog(HttpContext context)
+{
+    //  Возвращает каталог
+    SaveHeaders(context);
+    
+    return CatalogToString();
+}
+
+string AddProduct(Product product, HttpContext context)
 {
     //  Добавление продукта в каталог
+    SaveHeaders(context);
+
     catalog.Add(product);
 
-    return GetCatalog();
+    return CatalogToString();
+}
+
+void SaveHeaders(HttpContext context)
+{
+    //  Сохранить текущие HTML-заголовки и текущий путь, для возможности использовать их в эндпоинте /headers
+    headers = context.Request.Headers;
+    path = context.Request.Path.ToString();
+
+}
+
+string HeadersToString()
+{
+    //  Возвращает все HTTP загаловки сохранённого запроса в виде строки
+    // if (request == null) return "Ошибка: Запрос пустой";
+    if (path == String.Empty) return "Ошибка: Предыдущий запрос не сохранен.";
+    
+    string result = String.Empty;
+    
+    result += $"Last request path:= {path}\n\n";
+
+    foreach (var header in headers)
+    {
+        result += $"{header.Key} := {header.Value}\n";
+    }
+
+    headers = new HeaderDictionary();
+    path = String.Empty;
+    
+    return result;
 }
 
 public class Product
