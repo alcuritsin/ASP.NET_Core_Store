@@ -4,7 +4,8 @@ CreateCatalog();
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => "ASP.NET_Core-Store");
+app.MapGet("/catalog", GetCatalog);
 
 app.Run();
 
@@ -16,6 +17,23 @@ void CreateCatalog()
     catalog.Add(new Product(name:"Продукт_01", price: 11.1));
     catalog.Add(new Product(name:"Продукт_02", price: 22.2));
     catalog.Add(new Product(name:"Продукт_03", price: 33.3));
+}
+
+string GetCatalog()
+{
+    //  Возвращает каталог в текствовом формате
+    int counter = 1; 
+    string result = "Каталог продуктов:\n\n";
+    
+    foreach (var product in catalog)
+    {
+        result += $"{counter++}. {product.ToString()}\n";
+    }
+
+    result += $"\n===================================\n" +
+              $"Количество записей: {catalog.Count}";
+    
+    return result;
 }
 
 public class Product
