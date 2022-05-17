@@ -6,6 +6,7 @@ var app = builder.Build();
 
 app.MapGet("/", () => "ASP.NET_Core-Store");
 app.MapGet("/catalog", GetCatalog);
+app.MapPost("/catalog/add", AddProduct);
 
 app.Run();
 
@@ -34,6 +35,14 @@ string GetCatalog()
               $"Количество записей: {catalog.Count}";
     
     return result;
+}
+
+string AddProduct(Product product)
+{
+    //  Добавление продукта в каталог
+    catalog.Add(product);
+
+    return GetCatalog();
 }
 
 public class Product
