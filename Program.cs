@@ -1,3 +1,6 @@
+using System.Runtime.Serialization.Json;
+using Microsoft.Extensions.Primitives;
+
 List<Product> catalog = new List<Product>();    //  Локальная переменная для хранения каталога
 
 IHeaderDictionary headers = new HeaderDictionary(); //  Локальная переменная для хранения HTTP-заголовков из предидущего запроса
@@ -32,21 +35,34 @@ void CreateCatalog()
     catalog.Add(new Product(name:"Продукт_03", price: 33.3));
 }
 
-string CatalogToString()
+string CatalogToString(List<Product> _catalog)
 {
     //  Возвращает каталог в текствовом формате
     int counter = 1; 
-    string result = "Каталог продуктов:\n\n";
+    string result = "Каталог продуктов:\n" +
+                    "===================================\n";
     
-    foreach (var product in catalog)
+    foreach (var product in _catalog)
     {
         result += $"{counter++}. {product.ToString()}\n";
     }
 
-    result += $"\n===================================\n" +
-              $"Количество записей: {catalog.Count}";
+    result += "===================================\n" +
+              $"Количество записей: {_catalog.Count}\n";
     
     return result;
+}
+
+List<Product> ListClone(List<Product> source)
+{
+    //  Создаёт клон каталога
+    List<Product> clone = new List<Product>();
+    foreach (Product product in source)
+    {
+        clone.Add(new Product(product.Name, product.Price));
+    }
+
+    return clone;
 }
 
 string GetCatalog(HttpContext context)
@@ -54,7 +70,69 @@ string GetCatalog(HttpContext context)
     //  Возвращает каталог
     SaveHeaders(context);
     
-    return CatalogToString();
+    string result = String.Empty;   //  Результирующая строка для вывода
+    List<Product> resCatalog = ListClone(catalog);  //  Копия каталога для вывода
+    
+    //  Пересчёт стоимости в среду.
+    var hDate = context.Request.Headers.Date.ToString();
+    
+    //  DebugData
+    result += $"hDate: '{hDate}'\n";
+
+    if (hDate != "")
+    {
+        DateTime date = DateTime.ParseExact(context.Request.Headers.Date.ToString(), "d.m.yyyy",
+            System.Globalization.CultureInfo.InvariantCulture);
+        var dayOfWeek = (int) date.DayOfWeek;
+
+        if (dayOfWeek == 3)
+        {
+            MulPrice(resCatalog, 1.5);
+        }
+    }
+
+    //  Определение коэффициента в зависимости от устройства
+    string userAgent = context.Request.Headers.UserAgent.ToString();
+    
+    //  DebugData
+    result += $"userAgent: '{userAgent}'\n\n";
+
+    if (userAgent != "")
+    {
+        double multiplier = 0;
+        if (userAgent.Contains("Android"))
+        {
+            //  Скидка 10%
+            multiplier = 0.9;
+        }
+        else if (userAgent.Contains("iPhone"))
+        {
+            //  Наценка 50%
+            multiplier = 1.5;
+        }
+
+        if (multiplier != 0)
+        {
+            MulPrice(resCatalog, multiplier);
+        }
+    }
+    
+    //  Вывести копию каталога зависящую от условий
+    result += CatalogToString(resCatalog);
+    
+    //  Показать оригинальные значения каталога
+    result += "\n\nОригинал\t" + CatalogToString(catalog);
+    
+    return result;
+}
+
+void MulPrice(List<Product> source, double multiplier)
+{
+    //  Изменяет стоимость в каталоге умножеием на коэффициент (multiplier).
+    foreach (var product in source)
+    {
+        product.Price = Math.Round(product.Price * multiplier, 2);
+    }
 }
 
 string AddProduct(Product product, HttpContext context)
@@ -62,9 +140,15 @@ string AddProduct(Product product, HttpContext context)
     //  Добавление продукта в каталог
     SaveHeaders(context);
 
+    string result = String.Empty;
+    
     catalog.Add(product);
 
-    return CatalogToString();
+    result += CatalogToString(catalog);
+
+    result += $"Добавлен: '{product.ToString()}'\n";
+    
+    return result;
 }
 
 void SaveHeaders(HttpContext context)
@@ -72,7 +156,6 @@ void SaveHeaders(HttpContext context)
     //  Сохранить текущие HTML-заголовки и текущий путь, для возможности использовать их в эндпоинте /headers
     headers = context.Request.Headers;
     path = context.Request.Path.ToString();
-
 }
 
 string HeadersToString()
