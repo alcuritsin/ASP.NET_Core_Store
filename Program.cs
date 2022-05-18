@@ -3,8 +3,8 @@ using Microsoft.Extensions.Primitives;
 
 List<Product> catalog = new List<Product>();    //  Локальная переменная для хранения каталога
 
-IHeaderDictionary headers = new HeaderDictionary(); //  Локальная переменная для хранения HTTP-заголовков из предидущего запроса
-string path = String.Empty; //  Локальная переменная для хранения пути предидущего запроса
+IHeaderDictionary headers = new HeaderDictionary(); //  Локальная переменная для хранения HTTP-заголовков из предыдущего запроса
+string path = String.Empty; //  Локальная переменная для хранения пути предыдущего запроса
 
 CreateCatalog();
 
@@ -37,7 +37,7 @@ void CreateCatalog()
 
 string CatalogToString(List<Product> _catalog)
 {
-    //  Возвращает каталог в текствовом формате
+    //  Возвращает каталог в текстовом формате
     int counter = 1; 
     string result = "Каталог продуктов:\n" +
                     "===================================\n";
@@ -128,7 +128,7 @@ string GetCatalog(HttpContext context)
 
 void MulPrice(List<Product> source, double multiplier)
 {
-    //  Изменяет стоимость в каталоге умножеием на коэффициент (multiplier).
+    //  Изменяет стоимость в каталоге умножением на коэффициент (multiplier).
     foreach (var product in source)
     {
         product.Price = Math.Round(product.Price * multiplier, 2);
@@ -153,14 +153,14 @@ string AddProduct(Product product, HttpContext context)
 
 void SaveHeaders(HttpContext context)
 {
-    //  Сохранить текущие HTML-заголовки и текущий путь, для возможности использовать их в эндпоинте /headers
+    //  Сохранить текущие HTML-заголовки и текущий путь, для возможности использовать их в 'end point' /headers
     headers = context.Request.Headers;
     path = context.Request.Path.ToString();
 }
 
 string HeadersToString()
 {
-    //  Возвращает все HTTP загаловки сохранённого запроса в виде строки
+    //  Возвращает все HTTP заголовки сохранённого запроса в виде строки
     // if (request == null) return "Ошибка: Запрос пустой";
     if (path == String.Empty) return "Ошибка: Предыдущий запрос не сохранен.";
     
