@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace ASP.NET_Core_Store;
+namespace DataModel;
 
 public class Catalog
 {
@@ -11,25 +11,17 @@ public class Catalog
         Products = InitCatalog();
     }
 
-    ConcurrentBag<Product> InitCatalog()
+    private static ConcurrentBag<Product> InitCatalog()
     {
         return new ConcurrentBag<Product>();
     }
     
-    public string AddProduct(Product product)
+    public void AddProduct(Product product)
     {
         Products.Add(product);
-        // Products.Equals(product);
-        string result = String.Empty;
-
-        result += ToString();
-        
-        result += $"Добавлен: '{product.ToString()}'\n";
-
-        return result;
     }
 
-    public string GetProducts(string? userAgent)
+    public List<Product> GetProducts(string? userAgent)
     {
         double multiplier = 1;
         DateTime date = new DateTime(2022, 5, 19);
@@ -51,8 +43,19 @@ public class Catalog
                 multiplier *= 1.5;
                 break;
         }
-        
-        return ToString(multiplier);
+
+        List<Product> layoutCatalog = new List<Product>();
+
+        foreach (Product product in Products)
+        {
+            layoutCatalog.Add(
+                new Product(
+                    name: product.Name,
+                    price: Math.Round(product.Price * multiplier, 2)
+                    ));
+        }
+
+        return layoutCatalog;
     }
 
     private string ToString(double multiplier = 1)

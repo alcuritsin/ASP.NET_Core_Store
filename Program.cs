@@ -1,6 +1,4 @@
-using System.Runtime.Serialization.Json;
-using ASP.NET_Core_Store;
-using Microsoft.Extensions.Primitives;
+using DataModel;
 
 Catalog catalog = new Catalog();    //  Локальная переменная для хранения каталога
 
@@ -46,30 +44,22 @@ void CreateCatalog()
     catalog.AddProduct(new Product(name:"Продукт_03", price: 33.3));
 }
 
-string GetCatalog(HttpContext context)
+List<Product> GetCatalog(HttpContext context)
 {
     //  Возвращает каталог
     SaveHeaders(context);
-    
-    string result = String.Empty;   //  Результирующая строка для вывода
-    
+        
     string userAgent = context.Request.Headers.UserAgent.ToString();
-
-    //  DebugData
-    result += $"userAgent: '{userAgent}'\n\n";
     
-    //  Вывести каталог зависящий от условий
-    result += catalog.GetProducts(userAgent);
-    
-    return result;
+    return catalog.GetProducts(userAgent);
 }
 
 string AddProduct(Product product, HttpContext context)
 {
     //  Добавление продукта в каталог
     SaveHeaders(context);
-    
-    return catalog.AddProduct(product);
+    catalog.AddProduct(product);
+    return $"Добавлен: {product.ToString()}";
 }
 
 void SaveHeaders(HttpContext context)
