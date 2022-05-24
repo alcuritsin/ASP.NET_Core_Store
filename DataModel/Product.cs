@@ -1,4 +1,4 @@
-namespace ASP.NET_Core_Store;
+namespace DataModel;
 
 public class Product
 {
@@ -7,7 +7,7 @@ public class Product
         this.Name = name;
         this.Price = price;
     }
-
+    
     public override string ToString()
     {
         return $"Товар: {this.Name}; цена: {Math.Round(this.Price, 2)}";
@@ -19,5 +19,4 @@ public class Product
     }
     public string Name { get; set; }
     public double Price { get; set; }
-
 }

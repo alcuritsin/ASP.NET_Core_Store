@@ -10,4 +10,14 @@
       <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="DataModel\DataModel.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="StoreLib\StoreLib.cs">
+        <Link>API_lib\StoreLib.cs</Link>
+      </Compile>
+    </ItemGroup>
+
 </Project>
